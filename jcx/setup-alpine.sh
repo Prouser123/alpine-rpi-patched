@@ -113,6 +113,10 @@ if [ "$diskmode" != "sys" ]; then
 	fi
 fi
 
+# Enable /jcx/checks for LBU
+lbu add /jcx/checks
+lbu add /jcx/checks/*
+
 # Touch the check file and exit
 mkdir -p /jcx/checks
 touch /jcx/checks/firstboot

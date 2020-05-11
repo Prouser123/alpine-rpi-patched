@@ -19,12 +19,14 @@ cp /jcx/runner.sh "$sysroot"/jcx/services/boot/runner
 cp /jcx/setup-alpine.sh "$sysroot"/jcx/services/boot/setup-runner
 cp /jcx/openrc "$sysroot"/jcx/services/boot/openrc
 	
-ln -s /jcx/services/boot/openrc "$sysroot"/etc/init.d/jcx-firstboot
-ln -s /jcx/services/boot/openrc "$sysroot"/etc/runlevels/boot/jcx-firstboot
+ln -s /jcx/services/boot/openrc "$sysroot"/etc/init.d/jcx-boot
+ln -s /jcx/services/boot/openrc "$sysroot"/etc/runlevels/default/jcx-boot
 	
 echo "[JCX Entrypoint] Debug information:"
 ls "$sysroot" > /dev/console
 echo "-----" > /dev/console
+ls "$sysroot"/jcx > /dev/console
+echo "----" > /dev/console
 ls "$sysroot"/etc/init.d > /dev/console
 
 echo "[JCX Entrypoint] Done! Booting Alpine..."
