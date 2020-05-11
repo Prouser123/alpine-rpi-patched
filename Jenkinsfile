@@ -10,7 +10,7 @@ node('docker-cli') {
     stage('Patch') {
       checkout scm
 	  
-	  sh 'chmod +x patcher.sh && ./patcher.sh'
+	  sh 'chmod +x patcher.sh && ./patcher.sh jenkins'
 	  
       archiveArtifacts artifacts: 'alpine-patched.tar.gz', fingerprint: true
 	  

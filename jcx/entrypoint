@@ -14,6 +14,8 @@ echo "[JCX Entrypoint] Copying files..."
 	
 # Create /jcx/services/boot folder
 mkdir -p "$sysroot"/jcx/services/boot
+
+cp /jcx/sha "$sysroot"/jcx/.sha
 	
 cp /jcx/runner.sh "$sysroot"/jcx/services/boot/runner
 cp /jcx/setup-alpine.sh "$sysroot"/jcx/services/boot/setup-runner

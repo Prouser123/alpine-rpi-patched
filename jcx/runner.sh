@@ -10,6 +10,9 @@ then
 	sh /jcx/services/boot/setup-runner
 fi
 
+# Export the SHA to an env variable
+export SHA=$(cat /jcx/.sha)
+
 echo "[JCX Boot Service] Done!"
 
 exit 0
