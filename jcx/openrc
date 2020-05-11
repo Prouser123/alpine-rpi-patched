@@ -1,0 +1,8 @@
+#!/sbin/openrc-run
+
+name="firstboot"
+command=/jcx-firstboot
+
+depend() {
+	need hostname
+}

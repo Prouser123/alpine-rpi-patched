@@ -1,0 +1,22 @@
+#!/bin/sh
+
+
+echo "JCX Entrypoint" > /dev/console
+
+sleep 10
+
+echo "[JCX Entrypoint] Updating apk repositories..." 
+echo -e "/media/mmcblk0p1/apks\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/community"  > "$sysroot"/etc/apk/repositories
+
+echo "[JCX Entrypoint] Adding setup files..."
+cp /jcx/setup-alpine.sh "$sysroot"/jcx-firstboot
+cp /jcx/openrc "$sysroot"/etc/init.d/jcx-firstboot
+ln -s /etc/init.d/jcx-firstboot "$sysroot"/etc/runlevels/boot/jcx-firstboot
+
+echo "[JCX Entrypoint] Debug information:"
+ls "$sysroot" > /dev/console
+echo "-----" > /dev/console
+ls "$sysroot"/etc/init.d > /dev/console
+
+echo "[JCX Entrypoint] Done! Booting Alpine..."
+exit 0

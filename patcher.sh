@@ -21,8 +21,8 @@ echo 'Mounting filesystems...' && \
 ( mkdir rpi2; cd rpi2; zcat ../initramfs-rpi2.gz | cpio -i ) && \
 
 echo 'Patching Alpine Init script...' && \
-( cd rpi; git apply 0001-Patch-init.patch ) && \
-( cd rpi2; git apply 0001-Patch-init.patch ) && \
+( cd rpi; git apply ../../0001-Patch-init.patch ) && \
+( cd rpi2; git apply ../../0001-Patch-init.patch ) && \
 
 echo 'Injecting custom data...' && \
 ( cd rpi; cp ../../jcx ./ ) && \
