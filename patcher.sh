@@ -5,6 +5,9 @@
 
 set -x && \
 
+echo 'Deleting .git...' && \
+rm -rf .git
+
 echo 'Installing dependencies..' && \
 apk add cpio curl tar git && \
 
@@ -25,8 +28,8 @@ echo 'Patching Alpine Init script...' && \
 ( cd rpi2; git apply ../../0001-Patch-init.patch ) && \
 
 echo 'Injecting custom data...' && \
-( cd rpi; cp ../../jcx ./ ) && \
-( cd rpi2; cp ../../jcx ./ ) && \
+( cd rpi; cp -r ../../jcx ./ ) && \
+( cd rpi2; cp -r ../../jcx ./ ) && \
 
 echo 'Repacking Alpine...' && \
 ( cd rpi; find . | cpio -H newc -o | gzip -9 > ../initramfs-rpi-patched ) && \
