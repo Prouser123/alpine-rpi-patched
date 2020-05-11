@@ -41,6 +41,9 @@ echo 'Injecting custom data...' && \
 ( cd rpi; cp -r ../../jcx ./ ) && \
 ( cd rpi2; cp -r ../../jcx ./ ) && \
 
+echo 'Adding usercfg.txt...' && \
+( cd ../alpine; cp ../usercfg.txt ./ )
+
 echo 'Repacking Alpine...' && \
 ( cd rpi; find . | cpio -H newc -o | gzip -9 > ../initramfs-rpi-patched ) && \
 ( cd rpi2; find . | cpio -H newc -o | gzip -9 > ../initramfs-rpi2-patched ) && \
