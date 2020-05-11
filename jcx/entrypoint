@@ -10,26 +10,18 @@ echo ""
 echo "[JCX Entrypoint] Updating apk repositories..." 
 echo -e "/media/mmcblk0p1/apks\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/community"  > "$sysroot"/etc/apk/repositories
 
-echo "[JCX Entrypoint] Checking if this is the first boot..."
-if [[ ! -f "$sysroot"/jcx/checks/firstboot ]]
-then
-	echo "[JCX Entrypoint] 1st boot! Adding first boot setup files..."
+echo "[JCX Entrypoint] Copying files..."
 	
-	# Create /jcx/services/firstboot folder
-	mkdir -p "$sysroot"/jcx/services/firstboot
+# Create /jcx/services/boot folder
+mkdir -p "$sysroot"/jcx/services/boot
 	
-	cp /jcx/setup-alpine.sh "$sysroot"/jcx/services/firstboot/runner
-	cp /jcx/openrc "$sysroot"/jcx/services/firstboot/openrc
+cp /jcx/runner.sh "$sysroot"/jcx/services/boot/runner
+cp /jcx/setup-alpine.sh "$sysroot"/jcx/services/boot/setup-runner
+cp /jcx/openrc "$sysroot"/jcx/services/boot/openrc
 	
-	ln -s /jcx/services/firstboot/openrc "$sysroot"/etc/init.d/jcx-firstboot
-	ln -s /jcx/services/firstboot/openrc "$sysroot"/etc/runlevels/boot/jcx-firstboot
+ln -s /jcx/services/boot/openrc "$sysroot"/etc/init.d/jcx-firstboot
+ln -s /jcx/services/boot/openrc "$sysroot"/etc/runlevels/boot/jcx-firstboot
 	
-	# Add a firstboot file to the checks folder to stop this from running again.
-	mkdir -p "$sysroot"/jcx/checks/
-	# touch is not always available, so hacky script haha
-	echo "" > "$sysroot"/jcx/checks/firstboot
-fi
-
 echo "[JCX Entrypoint] Debug information:"
 ls "$sysroot" > /dev/console
 echo "-----" > /dev/console

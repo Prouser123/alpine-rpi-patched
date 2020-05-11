@@ -113,6 +113,8 @@ if [ "$diskmode" != "sys" ]; then
 	fi
 fi
 
-# Disable service and exit.
-rc-update del jcx-firstboot boot
+# Touch the check file and exit
+mkdir -p /jcx/checks
+touch /jcx/checks/firstboot
+
 exit 0
