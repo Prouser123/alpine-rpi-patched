@@ -1,7 +1,8 @@
 #!/bin/sh
 
-echo "JCX SETUP" > /dev/console
-sleep 10
+echo "[JCX First Boot Service]" > /dev/console
+
+set -x
 
 PREFIX=
 . $PREFIX/lib/libalpine.sh
@@ -111,3 +112,7 @@ if [ "$diskmode" != "sys" ]; then
 		apk cache sync
 	fi
 fi
+
+# Disable service and exit.
+rc-update del jcx-firstboot boot
+exit 0

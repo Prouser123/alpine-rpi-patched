@@ -1,7 +1,7 @@
 #!/sbin/openrc-run
 
-name="firstboot"
-command=/jcx-firstboot
+name="JCX First Boot Service"
+command=/jcx/services/firstboot/runner
 
 depend() {
 	need hostname
