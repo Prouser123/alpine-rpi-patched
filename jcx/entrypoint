@@ -1,7 +1,9 @@
 #!/bin/sh
 
+sysroot=$1
 
-echo "JCX Entrypoint" > /dev/console
+echo "[JCX Entrypoint] Welcome!" > /dev/console
+echo "[JCX Entrypoint] Using sysroot: $sysroot" > /dev/console
 
 sleep 10
 

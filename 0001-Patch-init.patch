@@ -17,7 +17,7 @@ index 32651bd..20030f2 100644
  done
 +# Run entrypoint script
 +echo "[JCX] Launching entrypoint..." > /dev/console
-+/jcx/entrypoint
++/jcx/entrypoint $sysroot
  sync
  
  [ "$KOPT_splash" = "init" ] && echo exit > $sysroot/$splashfile
