@@ -28,6 +28,7 @@ echo 'Patching Alpine Init script...' && \
 ( cd rpi2; git apply ../../0001-Patch-init.patch ) && \
 
 echo 'Injecting custom data...' && \
+( chmod -R 777 ../jcx ) && \
 ( cd rpi; cp -r ../../jcx ./ ) && \
 ( cd rpi2; cp -r ../../jcx ./ ) && \
 
