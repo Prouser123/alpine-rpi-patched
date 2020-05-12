@@ -98,10 +98,38 @@ fi
 
 # Disk stuff
 
+# ----- Create ext4 filesystem on the card's extra space -----
+
+apk add --no-cache --virtual jcxformat parted e2fsprogs
+
+START=$(parted -s /dev/mmcblk0 unit MB print free | tail -n2 | head -n1 | awk '{print $1}')
+
+END=$(parted -s /dev/mmcblk0 unit MB print free | tail -n2 | head -n1 | awk '{print $2}')
+
+SIZE=$(parted -s /dev/mmcblk0 unit MB print free | tail -n2 | head -n1 | awk '{print $3}')
+
+echo -e Start: $START\\nEnd: $END\\nSize: $SIZE
+
+parted -s /dev/mmcblk0 mkpart primary ext4 $START $END
+
+
+# Not required, parted will do this automatically
+# mkfs.ext4 /dev/mmcblk0p2
+
+mkdir -p /media/mmcblk0p2
+
+echo "/dev/mmcblk0p2 /media/mmcblk0p2 ext4 rw 0 0" >> /etc/fstab
+
+mount /dev/mmcblk0p2
+
+apk del jcxformat
+
+# ----- END -----
+
 DEFAULT_DISK=none \
 	#$PREFIX/sbin/setup-disk -q ${DISKOPTS} || exit
 	# default rpi sd card
-	$PREFIX/sbin/setup-disk -q -m data /media/mmcblk0p1/data || exit
+	$PREFIX/sbin/setup-disk -q -m data /media/mmcblk0p2/data || exit
 
 diskmode=$(cat /tmp/alpine-install-diskmode.out 2>/dev/null)
 
@@ -109,10 +137,10 @@ diskmode=$(cat /tmp/alpine-install-diskmode.out 2>/dev/null)
 if [ "$diskmode" != "sys" ]; then
 	#$PREFIX/sbin/setup-lbu ${LBUOPTS}
 	# default rpi sd card
-	$PREFIX/sbin/setup-lbu mmcblk0p1
+	$PREFIX/sbin/setup-lbu mmcblk0p2
 	#$PREFIX/sbin/setup-apkcache ${APKCACHEOPTS}
 	# default rpi sd card
-	$PREFIX/sbin/setup-apkcache /media/mmcblk0p1/cache
+	$PREFIX/sbin/setup-apkcache /media/mmcblk0p2/cache
 	if [ -L /etc/apk/cache ]; then
 		apk cache sync
 	fi

@@ -30,6 +30,10 @@ echo -e "\033[1;35mAPK \033[1;32mAvailable\t\t\033[1;36m$(apk list -a | tee /dev
 
 echo ""
 
+df -h
+
+echo ""
+
 # ----- System Information END -----
 
 echo "[JCX Boot Service] Done!"
