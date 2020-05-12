@@ -1,7 +1,8 @@
 #!/bin/sh
 
-echo "JCX SETUP" > /dev/console
-sleep 10
+echo "[JCX First Boot Service]" > /dev/console
+
+set -x
 
 PREFIX=
 . $PREFIX/lib/libalpine.sh
@@ -72,7 +73,8 @@ sed -i -e "s/^127\.0\.0\.1.*/127.0.0.1\t${_hn}.${_dn:-$(get_fqdn)} ${_hn} localh
 
 # Setup NTP
 if ! is_qemu && [ "$rc_sys" != "LXC" ] && [ "$quick" != 1 ]; then
-	$PREFIX/sbin/setup-ntp -c openntpd
+	# OpenNTPD is lighter, but doesn't seem to work.
+	$PREFIX/sbin/setup-ntp -c chrony
 fi
 
 # Setup APK Repo Opts ------ SKIPPED
@@ -80,6 +82,10 @@ fi
 
 # Setup SSHD
 $PREFIX/sbin/setup-sshd -c openssh
+
+# Enable password and root login.
+echo -e "PasswordAuthentication yes\nPermitRootLogin yes\nPermitEmptyPasswords yes\nDenyUsers guest" > /etc/ssh/sshd_config
+rc-service sshd restart
 
 # misc
 if is_xen_dom0; then
@@ -111,3 +117,16 @@ if [ "$diskmode" != "sys" ]; then
 		apk cache sync
 	fi
 fi
+
+# Upgrade all packages
+apk update && apk upgrade
+
+# Enable /jcx/checks for LBU
+lbu add /jcx/checks
+lbu add /jcx/checks/*
+
+# Touch the check file and exit
+mkdir -p /jcx/checks
+touch /jcx/checks/firstboot
+
+exit 0

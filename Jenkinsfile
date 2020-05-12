@@ -8,9 +8,12 @@ node('docker-cli') {
   docker.image('jcxldn/jenkins-containers:base').inside {
 
     stage('Patch') {
-      checkout scm
+	  def scmVars = checkout scm
+	  echo "found GIT_COMMIT: ${scmVars.GIT_COMMIT}"
+	  echo "set env.GIT_COMMIT: ${env.GIT_COMMIT}"
+	  env.GIT_COMMIT = scmVars.GIT_COMMIT
 	  
-	  sh 'chmod +x patcher.sh && ./patcher.sh'
+	  sh 'chmod +x patcher.sh && ./patcher.sh jenkins'
 	  
       archiveArtifacts artifacts: 'alpine-patched.tar.gz', fingerprint: true
 	  

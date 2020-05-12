@@ -5,6 +5,15 @@
 
 set -x && \
 
+if [ $1 = 'jenkins' ]
+then
+	echo 'Creating jcx/sha file using Jenkins...'
+	echo $GIT_COMMIT | cut -c1-5 > jcx/sha
+else
+	echo 'Creating jcx/sha file...'
+	git rev-parse --short | cut -c1-5 > jcx/sha
+fi
+
 echo 'Deleting .git...' && \
 rm -rf .git
 
@@ -31,6 +40,9 @@ echo 'Injecting custom data...' && \
 ( chmod -R 777 ../jcx ) && \
 ( cd rpi; cp -r ../../jcx ./ ) && \
 ( cd rpi2; cp -r ../../jcx ./ ) && \
+
+echo 'Adding usercfg.txt...' && \
+( cd ../alpine; cp ../usercfg.txt ./ )
 
 echo 'Repacking Alpine...' && \
 ( cd rpi; find . | cpio -H newc -o | gzip -9 > ../initramfs-rpi-patched ) && \
