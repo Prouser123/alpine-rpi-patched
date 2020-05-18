@@ -8,10 +8,10 @@ set -x && \
 if [ $1 = 'jenkins' ]
 then
 	echo 'Creating jcx/sha file using Jenkins...'
-	echo $GIT_COMMIT | cut -c1-5 > jcx/sha
+	echo $GIT_COMMIT | cut -c1-7 > jcx/sha
 else
 	echo 'Creating jcx/sha file...'
-	git rev-parse --short | cut -c1-5 > jcx/sha
+	git rev-parse --short | cut -c1-7 > jcx/sha
 fi
 
 echo 'Deleting .git...' && \
