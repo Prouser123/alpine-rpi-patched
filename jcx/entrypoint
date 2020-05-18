@@ -20,6 +20,10 @@ cp /jcx/sha "$sysroot"/jcx/.sha
 cp /jcx/runner.sh "$sysroot"/jcx/services/boot/runner
 cp /jcx/setup-alpine.sh "$sysroot"/jcx/services/boot/setup-runner
 cp /jcx/openrc "$sysroot"/jcx/services/boot/openrc
+
+# Copy bin scripts
+cp -r /jcx/bin/ "$sysroot"/jcx
+ln -s /jcx/bin/* /bin
 	
 ln -s /jcx/services/boot/openrc "$sysroot"/etc/init.d/jcx-boot
 ln -s /jcx/services/boot/openrc "$sysroot"/etc/runlevels/default/jcx-boot

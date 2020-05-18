@@ -1,0 +1,35 @@
+#!/bin/sh
+
+# Loopback image with overlayFS
+# requires setup-alpine!
+
+set -x
+
+# Create the overlay ( usr / etc / home / root )
+
+mkdir /media/mmcblk0p2/usr 
+mkdir /media/mmcblk0p2/.work.usr 
+echo "overlay /usr overlay lowerdir=/usr,upperdir=/media/mmcblk0p2/usr,workdir=/media/mmcblk0p2/.work.usr 0 0" >> /etc/fstab 
+mount -a
+
+mkdir /media/mmcblk0p2/etc 
+mkdir /media/mmcblk0p2/.work.etc 
+echo "overlay /etc overlay lowerdir=/etc,upperdir=/media/mmcblk0p2/etc,workdir=/media/mmcblk0p2/.work.etc 0 0" >> /etc/fstab 
+mount -a
+
+mkdir /media/mmcblk0p2/home 
+mkdir /media/mmcblk0p2/.work.home
+echo "overlay /home overlay lowerdir=/home,upperdir=/media/mmcblk0p2/home,workdir=/media/mmcblk0p2/.work.home 0 0" >> /etc/fstab 
+mount -a
+
+mkdir /media/mmcblk0p2/root 
+mkdir /media/mmcblk0p2/.work.root 
+echo "overlay /root overlay lowerdir=/root,upperdir=/media/mmcblk0p2/root,workdir=/media/mmcblk0p2/.work.root 0 0" >> /etc/fstab 
+mount -a
+
+mkdir /media/mmcblk0p2/var 
+mkdir /media/mmcblk0p2/.work.var 
+echo "overlay /var overlay lowerdir=/var,upperdir=/media/mmcblk0p2/var,workdir=/media/mmcblk0p2/.work.var 0 0" >> /etc/fstab 
+mount -a
+
+lbu_commit -d

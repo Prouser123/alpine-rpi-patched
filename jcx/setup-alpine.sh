@@ -118,7 +118,7 @@ parted -s /dev/mmcblk0 mkpart primary ext4 $START $END
 
 mkdir -p /media/mmcblk0p2
 
-echo "/dev/mmcblk0p2 /media/mmcblk0p2 ext4 rw 0 0" >> /etc/fstab
+echo "/dev/mmcblk0p2 /media/mmcblk0p2 ext4 rw,relatime,errors=remount-ro 0 0" >> /etc/fstab
 
 mount /dev/mmcblk0p2
 
