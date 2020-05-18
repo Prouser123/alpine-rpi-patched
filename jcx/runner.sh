@@ -10,6 +10,9 @@ then
 	sh /jcx/services/boot/setup-runner
 fi
 
+# Create symbolic link for bin scripts
+ln -s /jcx/bin/* /bin
+
 # ----- System Information -----
 
 echo ""
