@@ -100,7 +100,7 @@ fi
 
 # ----- Create ext4 filesystem on the card's extra space -----
 
-apk add --no-cache --force-non-repository --virtual jcxformat parted e2fsprogs
+apk add --no-cache --virtual jcxformat --force-non-repository parted e2fsprogs
 
 START=$(parted -s /dev/mmcblk0 unit MB print free | tail -n2 | head -n1 | awk '{print $1}')
 
