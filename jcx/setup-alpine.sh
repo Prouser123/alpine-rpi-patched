@@ -113,8 +113,8 @@ echo -e Start: $START\\nEnd: $END\\nSize: $SIZE
 # Create the partition
 parted -s /dev/mmcblk0 mkpart primary ext4 $START $END
 
-# Format the partition
-mkfs.ext4 -L alpinedata /dev/mmcblk0p2
+# Format the partition (force)
+mkfs.ext4 -F -L alpinedata /dev/mmcblk0p2
 
 mkdir -p /media/mmcblk0p2
 
