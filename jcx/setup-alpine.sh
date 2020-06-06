@@ -110,11 +110,11 @@ SIZE=$(parted -s /dev/mmcblk0 unit MB print free | tail -n2 | head -n1 | awk '{p
 
 echo -e Start: $START\\nEnd: $END\\nSize: $SIZE
 
+# Create the partition
 parted -s /dev/mmcblk0 mkpart primary ext4 $START $END
 
-
-# Not required, parted will do this automatically
-# mkfs.ext4 /dev/mmcblk0p2
+# Format the partition
+mkfs.ext4 -L alpinedata /dev/mmcblk0p2
 
 mkdir -p /media/mmcblk0p2
 
