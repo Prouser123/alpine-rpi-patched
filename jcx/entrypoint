@@ -17,8 +17,9 @@ cmd() {
 log "Welcome to the alpine initramfs!"
 log "Using sysroot: $sysroot"
 
-log "Adding web-based apk repositories..." 
-echo -e "$(cat "$sysroot"/etc/apk/repositories)\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/community"  > "$sysroot"/etc/apk/repositories
+# (disabled - we like being able to change these!)
+# log "Adding web-based apk repositories..." 
+# echo -e "$(cat "$sysroot"/etc/apk/repositories)\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/community"  > "$sysroot"/etc/apk/repositories
 
 log "Copying files (initramfs --> sysroot [userland])..."
 
