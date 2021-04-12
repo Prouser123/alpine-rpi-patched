@@ -5,6 +5,11 @@
 
 set -x && \
 
+
+echo 'Installing dependencies..' && \
+apk add cpio curl tar git && \
+
+
 if [ $1 = 'jenkins' ]
 then
 	echo 'Creating jcx/sha file using Jenkins...'
@@ -16,9 +21,6 @@ fi
 
 echo 'Deleting .git...' && \
 rm -rf .git
-
-echo 'Installing dependencies..' && \
-apk add cpio curl tar git && \
 
 echo 'Downloading alpine...' && \
 curl -fSL https://alpine-cf-cdn.jcx.ovh/alpine/v3.11/releases/armhf/alpine-rpi-3.11.6-armhf.tar.gz -o alpine.tar.gz && \
