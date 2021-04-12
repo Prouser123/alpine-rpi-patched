@@ -15,9 +15,9 @@ index 32651bd..20030f2 100644
  		mount -o move $DIR $sysroot/$DIR
  	fi
  done
-+# Run entrypoint script
-+echo "[JCX] Launching entrypoint..." > /dev/console
++# (jcx alpine): Run entrypoint script
 +/jcx/entrypoint $sysroot
++# (jcx alpine end)
  sync
  
  [ "$KOPT_splash" = "init" ] && echo exit > $sysroot/$splashfile
