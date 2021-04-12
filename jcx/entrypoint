@@ -2,15 +2,21 @@
 
 sysroot=$1
 
-echo "[JCX Entrypoint] Welcome!" > /dev/console
-echo "[JCX Entrypoint] Using sysroot: $sysroot" > /dev/console
+log() {
+    cmd echo "jcx.entrypoint > $1"
+}
 
-echo ""
+cmd() {
+    "$@" > /dev/console
+}
 
-echo "[JCX Entrypoint] Updating apk repositories..." 
-echo -e "/media/mmcblk0p1/apks\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/community"  > "$sysroot"/etc/apk/repositories
+log "Welcome to the alpine initramfs!"
+log "Using sysroot: $sysroot"
 
-echo "[JCX Entrypoint] Copying files..."
+#log "Updating apk repositories..." 
+#echo -e "/media/mmcblk0p1/apks\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/community"  > "$sysroot"/etc/apk/repositories
+
+log "Copying files..."
 	
 # Create /jcx/services/boot folder
 mkdir -p "$sysroot"/jcx/services/boot
@@ -23,13 +29,10 @@ cp /jcx/openrc "$sysroot"/jcx/services/boot/openrc
 	
 ln -s /jcx/services/boot/openrc "$sysroot"/etc/init.d/jcx-boot
 ln -s /jcx/services/boot/openrc "$sysroot"/etc/runlevels/default/jcx-boot
-	
-echo "[JCX Entrypoint] Debug information:"
-ls "$sysroot" > /dev/console
-echo "-----" > /dev/console
-ls "$sysroot"/jcx > /dev/console
-echo "----" > /dev/console
-ls "$sysroot"/etc/init.d > /dev/console
 
-echo "[JCX Entrypoint] Done! Booting Alpine..."
+
+log "Debug info:"
+cmd ls -LR "$sysroot"/jcx
+
+log "Done! Continuing with alpine boot..."
 exit 0
