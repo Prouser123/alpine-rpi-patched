@@ -2,6 +2,10 @@
 
 sysroot=$1
 
+debug() {
+    log "(debug): $1"
+}
+
 log() {
     cmd echo "jcx.entrypoint > $1"
 }
@@ -13,23 +17,28 @@ cmd() {
 log "Welcome to the alpine initramfs!"
 log "Using sysroot: $sysroot"
 
-#log "Updating apk repositories..." 
-#echo -e "/media/mmcblk0p1/apks\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/community"  > "$sysroot"/etc/apk/repositories
+log "Adding web-based apk repositories..." 
+echo -e "$(cat "$sysroot"/etc/apk/repositories)\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main\nhttps://alpine-cf-cdn.jcx.ovh/alpine/v3.11/community"  > "$sysroot"/etc/apk/repositories
 
-log "Copying files..."
-	
-# Create /jcx/services/boot folder
-mkdir -p "$sysroot"/jcx/services/boot
+log "Copying files (initramfs --> sysroot [userland])..."
 
+log "copy > Creating /jcx folder..."
+mkdir -p "$sysroot"/jcx
+
+debug "Copying build SHA..."
 cp /jcx/sha "$sysroot"/jcx/.sha
+
+debug "Copying sysroot data..."
+cp -r /jcx/sysroot/* "$sysroot"/jcx/
 	
-cp /jcx/runner.sh "$sysroot"/jcx/services/boot/runner
-cp /jcx/setup-alpine.sh "$sysroot"/jcx/services/boot/setup-runner
-cp /jcx/openrc "$sysroot"/jcx/services/boot/openrc
-	
+debug "Setting up custom boot service..."
 ln -s /jcx/services/boot/openrc "$sysroot"/etc/init.d/jcx-boot
 ln -s /jcx/services/boot/openrc "$sysroot"/etc/runlevels/default/jcx-boot
 
+
+# (unused)
+# debug "Enabling parallel startup in OpenRC..."
+# sed -e 's/#rc_parallel="NO"/rc_parallel="YES"/g' -i "$sysroot"/etc/rc.conf
 
 log "Debug info:"
 cmd ls -LR "$sysroot"/jcx
