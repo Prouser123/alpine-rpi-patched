@@ -1,12 +1,15 @@
 #!/bin/sh
 
-echo "[JCX Boot Service] Welcome!" > /dev/console
+# Load pretty logging functions :D
+source /jcx/services/boot/logging
+
+ewarn "Welcome to the JCX Boot Service!"
 
 # If first boot, run setup.
-echo "[JCX Boot Service] Checking if this is the first boot..."
+einfo "Checking if this is the first boot..."
 if [ ! -e /jcx/checks/firstboot ]
 then
-	echo "[JCX Boot Service] First boot! Running setup..."
+	einfo "First boot! Running setup..."
 	sh /jcx/services/boot/setup-runner
 fi
 
@@ -31,7 +34,5 @@ echo -e "\033[1;35mAPK \033[1;32mAvailable\t\t\033[1;36m$(apk list -a | tee /dev
 echo ""
 
 # ----- System Information END -----
-
-echo "[JCX Boot Service] Done!"
 
 exit 0

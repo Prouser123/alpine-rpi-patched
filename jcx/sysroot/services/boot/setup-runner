@@ -1,45 +1,56 @@
 #!/bin/sh
 
-echo "[JCX First Boot Service]" > /dev/console
+# FIXME: Step 7 regression from old runner: FQDN always fails to resolve and falls back to default.
+
+# Load pretty logging functions :D
+source /jcx/services/boot/logging
+
+ewarn "Running first boot setup..."
 
 set -x
 
-PREFIX=
-. $PREFIX/lib/libalpine.sh
+# Step 0: Raspberry Pis don't have a hardware clock!
+einfo "Fixing clock..."
+rc-update add swclock boot    # enable the software clock
+rc-update del hwclock boot    # disable the hardware clock
 
-if [ "$rc_sys" != LXC ]; then
-	$PREFIX/sbin/setup-keymap gb gb
-	$PREFIX/sbin/setup-hostname alpine
-fi
+# setup-alpine excerps ahead!
 
-#if [ -n "$INTERFACESOPTS" ]; then
-#	printf "$INTERFACESOPTS" | $PREFIX/sbin/setup-interfaces -i
-#else
-#	$PREFIX/sbin/setup-interfaces ${quick:+-a}
-#fi
-#$PREFIX/sbin/setup-interfaces
+# Step 1: Setup keymap + hostname
+einfo "Setting up keymap, hostname..."
+# No point for the lxc checks since we're on RPi
+setup-keymap gb gb
+setup-hostname alpine
+
+# Step 2: Setup interfaces (dhcp ethernet for now)
+einfo "Setting up interfaces..."
 echo "auto lo
 iface lo inet loopback
 
 auto eth0
 iface eth0 inet dhcp
 	hostname alpine
-" | $PREFIX/sbin/setup-interfaces -i
+" | setup-interfaces -i
 
-# start the networking
-/etc/init.d/networking --quiet start >/dev/null
+# Step 3: Setup networking
+einfo "Setting up networking..."
+# /etc/init.d/networking --quiet start >/dev/null
+/etc/init.d/networking start
 
-# setup up dns if no dhcp was configured
-#grep '^iface.*dhcp' $ROOT/etc/network/interfaces > /dev/null ||\
-#	$PREFIX/sbin/setup-dns ${DNSOPTS}
+# Step 3.1: Setup DNS if dhcp was not configured
+grep '^iface.*dhcp' $ROOT/etc/network/interfaces > /dev/null ||\
+	# setup-dns -d (this is setup-dns without the search domain part)
+    mkdir -p /etc/ && echo "nameserver 1.1.1.1" > /etc/resolv.conf
 
-# ---- SKIP ROOT PASSWORD SETTING ----
+# Step 4: Set Root Pasword (Skipped)
 
-# Setup timezone
-$PREFIX/sbin/setup-timezone -z Europe/London
+# Step 5: Setup Timezone
+einfo "Setting up timezone (Europe/London)"
+# In this case we'll use Europe/London
+setup-timezone -z Europe/London
 
-# Enable services
-
+# Step 6: Enable Services
+einfo "Setting up services..."
 rc-update --quiet add networking boot
 rc-update --quiet add urandom boot
 for svc in acpid cron crond; do
@@ -48,13 +59,28 @@ for svc in acpid cron crond; do
 	fi
 done
 
-# enable new hostname
+# Step 6.1: Enable our new hostname
+einfo "Restarting hostname..."
 /etc/init.d/hostname --quiet restart
 
-# start up the services
+# Step 6.2: Start up the services
+einfo "Starting boot and default services..."
 openrc boot
 openrc default
 
+# Step 7-pre: Define get_fdqn
+# Extract fully qualified domain name from current hostname. If none is
+# currently set, use 'my.domain'.
+get_fqdn() {
+	local _dn
+	_dn=$(hostname -f 2>/dev/null)
+	_dn=${_dn#$(hostname -s 2>/dev/null)}
+	_dn=${_dn#.}
+	echo "${_dn:=my.domain}"
+}
+
+# Step 7: Update /etc/hosts
+einfo "Updating /etc/hosts..."
 # update /etc/hosts - after we have got dhcp address
 # Get default fully qualified domain name from *first* domain
 # given on *last* search or domain statement.
@@ -68,65 +94,60 @@ _hn=${_hn%%.*}
 
 sed -i -e "s/^127\.0\.0\.1.*/127.0.0.1\t${_hn}.${_dn:-$(get_fqdn)} ${_hn} localhost.localdomain localhost/" /etc/hosts
 
+# Step 8: Setup Proxy (Skipped)
 
-# ----- SKIPPING PROXY -----
+# Step 9: Setup NTP
+einfo "Setting up NTP..."
+# We don't bother with the pre-req checks here
+setup-ntp -c chrony
 
-# Setup NTP
-if ! is_qemu && [ "$rc_sys" != "LXC" ] && [ "$quick" != 1 ]; then
-	# OpenNTPD is lighter, but doesn't seem to work.
-	$PREFIX/sbin/setup-ntp -c chrony
-fi
+# Step 9.1: Grab NTP data (Jump to current time)
+echo "Grabbing NTP date..."
+echo $(set -x && chronyc makestep)
 
-# Setup APK Repo Opts ------ SKIPPED
-# $PREFIX/sbin/setup-apkrepos ${APKREPOSOPTS}
+# Step 10-pre: Define get_alpine_release
+get_alpine_release() {
+	local version=$(cat "${ROOT}"etc/alpine-release 2>/dev/null)
+	case "$version" in
+		*_git*|*_alpha*) release="edge";;
+		[0-9]*.[0-9]*.[0-9]*)
+			# release in x.y.z format, cut last digit
+			release=v${version%.[0-9]*};;
+		*)	# fallback to edge
+			release="edge";;
+	esac
+}
 
-# Setup SSHD
-$PREFIX/sbin/setup-sshd -c openssh
+# Step 10: Setup APK Repo Options
+einfo "Setting up apk repos..."
+# Here we use a custom script instead
+get_alpine_release
+mirror="https://alpine-cf-cdn.jcx.ovh/alpine/"
+echo "${mirror%/}/${release}/main" >> /etc/apk/repositories
+echo "${mirror%/}/${release}/community" >> /etc/apk/repositories
 
-# Enable password and root login.
+# Step 11: Setup SSHd (SSH Server)
+einfo "Setting up sshd..."
+setup-sshd -c openssh
+
+# Step 11.1: Enanable password and root login
 echo -e "PasswordAuthentication yes\nPermitRootLogin yes\nPermitEmptyPasswords yes\nDenyUsers guest" > /etc/ssh/sshd_config
 rc-service sshd restart
 
-# misc
-if is_xen_dom0; then
-	setup-xen-dom0
-fi
+# (Skipped setup-xen-dom0)
 
-if [ "$rc_sys" = "LXC" ]; then
-	exit 0
-fi
+# Step 12: Disk Stuffs (not implemented)
 
-# Disk stuff
+# Step 13: Upgrade everything
+einfo "Upgrading system..."
 
-DEFAULT_DISK=none \
-	#$PREFIX/sbin/setup-disk -q ${DISKOPTS} || exit
-	# default rpi sd card
-	$PREFIX/sbin/setup-disk -q -m data /media/mmcblk0p1/data || exit
-
-diskmode=$(cat /tmp/alpine-install-diskmode.out 2>/dev/null)
-
-# setup lbu and apk cache unless installed sys on disk
-if [ "$diskmode" != "sys" ]; then
-	#$PREFIX/sbin/setup-lbu ${LBUOPTS}
-	# default rpi sd card
-	$PREFIX/sbin/setup-lbu mmcblk0p1
-	#$PREFIX/sbin/setup-apkcache ${APKCACHEOPTS}
-	# default rpi sd card
-	$PREFIX/sbin/setup-apkcache /media/mmcblk0p1/cache
-	if [ -L /etc/apk/cache ]; then
-		apk cache sync
-	fi
-fi
-
-# Upgrade all packages
 apk update && apk upgrade
 
-# Enable /jcx/checks for LBU
-lbu add /jcx/checks
-lbu add /jcx/checks/*
-
-# Touch the check file and exit
+# Cleaning up
+einfo "Cleaning up..."
+# Touch the firstboot check file
 mkdir -p /jcx/checks
 touch /jcx/checks/firstboot
 
+# Quit
 exit 0
