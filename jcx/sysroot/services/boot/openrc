@@ -1,8 +1,11 @@
 #!/sbin/openrc-run
 
 name="JCX Boot Service"
-command=/jcx/services/boot/runner
 
 depend() {
 	need hostname
+}
+
+start() {
+	. /jcx/services/boot/runner
 }
