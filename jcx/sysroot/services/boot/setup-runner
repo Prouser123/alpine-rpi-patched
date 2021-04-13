@@ -103,7 +103,8 @@ setup-ntp -c chrony
 
 # Step 9.1: Grab NTP data (Jump to current time)
 echo "Grabbing NTP date..."
-echo $(set -x && chronyc makestep)
+#echo $(set -x && chronyc makestep)
+chmod +x /jcx/services/boot/trackr.sh && ./jcx/services/boot/trackr.sh
 
 # Step 10-pre: Define get_alpine_release
 get_alpine_release() {
