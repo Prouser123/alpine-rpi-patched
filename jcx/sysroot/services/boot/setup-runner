@@ -2,28 +2,25 @@
 
 # FIXME: Step 7 regression from old runner: FQDN always fails to resolve and falls back to default.
 
-# Load pretty logging functions :D
-source /jcx/services/boot/logging
-
-ewarn "Running first boot setup..."
+swarn "Running first boot setup..."
 
 set -x
 
 # Step 0: Raspberry Pis don't have a hardware clock!
-einfo "Fixing clock..."
+sbegin "Fixing clock"
 rc-update add swclock boot    # enable the software clock
 rc-update del hwclock boot    # disable the hardware clock
 
 # setup-alpine excerps ahead!
 
 # Step 1: Setup keymap + hostname
-einfo "Setting up keymap, hostname..."
+sbegin "Setting up keymap, hostname"
 # No point for the lxc checks since we're on RPi
 setup-keymap gb gb
 setup-hostname alpine
 
 # Step 2: Setup interfaces (dhcp ethernet for now)
-einfo "Setting up interfaces..."
+sbegin "Setting up interfaces"
 echo "auto lo
 iface lo inet loopback
 
@@ -33,7 +30,7 @@ iface eth0 inet dhcp
 " | setup-interfaces -i
 
 # Step 3: Setup networking
-einfo "Setting up networking..."
+sbegin "Setting up networking"
 # /etc/init.d/networking --quiet start >/dev/null
 /etc/init.d/networking start
 
@@ -45,12 +42,12 @@ grep '^iface.*dhcp' $ROOT/etc/network/interfaces > /dev/null ||\
 # Step 4: Set Root Pasword (Skipped)
 
 # Step 5: Setup Timezone
-einfo "Setting up timezone (Europe/London)"
+sbegin "Setting up timezone (Europe/London)"
 # In this case we'll use Europe/London
 setup-timezone -z Europe/London
 
 # Step 6: Enable Services
-einfo "Setting up services..."
+sbegin "Setting up services"
 rc-update --quiet add networking boot
 rc-update --quiet add urandom boot
 for svc in acpid cron crond; do
@@ -60,11 +57,11 @@ for svc in acpid cron crond; do
 done
 
 # Step 6.1: Enable our new hostname
-einfo "Restarting hostname..."
+sbegin "Restarting hostname"
 /etc/init.d/hostname --quiet restart
 
 # Step 6.2: Start up the services
-einfo "Starting boot and default services..."
+sbegin "Starting boot and default services"
 openrc boot
 openrc default
 
@@ -80,7 +77,7 @@ get_fqdn() {
 }
 
 # Step 7: Update /etc/hosts
-einfo "Updating /etc/hosts..."
+sbegin "Updating /etc/hosts"
 # update /etc/hosts - after we have got dhcp address
 # Get default fully qualified domain name from *first* domain
 # given on *last* search or domain statement.
@@ -97,12 +94,12 @@ sed -i -e "s/^127\.0\.0\.1.*/127.0.0.1\t${_hn}.${_dn:-$(get_fqdn)} ${_hn} localh
 # Step 8: Setup Proxy (Skipped)
 
 # Step 9: Setup NTP
-einfo "Setting up NTP..."
+sbegin "Setting up NTP"
 # We don't bother with the pre-req checks here
 setup-ntp -c chrony
 
 # Step 9.1: Grab NTP data (Jump to current time)
-echo "Grabbing NTP date..."
+sbegin "Grabbing NTP date"
 #echo $(set -x && chronyc makestep)
 chmod +x /jcx/services/boot/trackr.sh && ./jcx/services/boot/trackr.sh
 
@@ -120,7 +117,7 @@ get_alpine_release() {
 }
 
 # Step 10: Setup APK Repo Options
-einfo "Setting up apk repos..."
+sbegin "Setting up apk repos"
 # Here we use a custom script instead
 get_alpine_release
 mirror="https://alpine-cf-cdn.jcx.ovh/alpine/"
@@ -128,7 +125,7 @@ echo "${mirror%/}/${release}/main" >> /etc/apk/repositories
 echo "${mirror%/}/${release}/community" >> /etc/apk/repositories
 
 # Step 11: Setup SSHd (SSH Server)
-einfo "Setting up sshd..."
+sbegin "Setting up sshd"
 setup-sshd -c openssh
 
 # Step 11.1: Enanable password and root login
@@ -140,15 +137,14 @@ rc-service sshd restart
 # Step 12: Disk Stuffs (not implemented)
 
 # Step 13: Upgrade everything
-einfo "Upgrading system..."
+sbegin "Upgrading system"
 
 apk update && apk upgrade
 
 # Cleaning up
-einfo "Cleaning up..."
+sbegin "Cleaning up"
 # Touch the firstboot check file
 mkdir -p /jcx/checks
 touch /jcx/checks/firstboot
 
-# Quit
-exit 0
+# We don't "exit 0" here as we source this file in runner.
