@@ -10,14 +10,8 @@ echo 'Installing dependencies..' && \
 apk add cpio curl tar git && \
 
 
-if [ $1 = 'jenkins' ]
-then
-	echo 'Creating jcx/sha file using Jenkins...'
-	echo $GIT_COMMIT | cut -c1-5 > jcx/sha
-else
-	echo 'Creating jcx/sha file...'
-	git rev-parse --short | cut -c1-5 > jcx/sha
-fi
+echo 'Creating jcx/sha file...'
+git rev-parse --short | cut -c1-5 > jcx/sha
 
 echo 'Deleting .git...' && \
 rm -rf .git
@@ -45,6 +39,15 @@ echo 'Injecting custom data...' && \
 
 echo 'Adding usercfg.txt...' && \
 ( cd ../alpine; cp ../usercfg.txt ./ )
+
+# ./patcher debug | override cmdline.txt to include non-quiet and serial UART console
+if [ $1 == 'debug' ]
+then
+	echo 'Adding cmdline.txt (debug mode)'
+	( cd ../alpine; mv cmdline.txt cmdline.txt.vanilla; cp ../cmdline.txt ./)
+else
+	echo "Debug not set, skipping cmdline.txt..."
+fi
 
 echo 'Repacking Alpine...' && \
 ( cd rpi; find . | cpio -H newc -o | gzip -9 > ../initramfs-rpi-patched ) && \

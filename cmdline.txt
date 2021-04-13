@@ -1,0 +1,2 @@
+# debug cmdline.txt
+modules=loop,squashfs,sd-mod,usb-storage console=tty1 console=ttyAMA0,115200

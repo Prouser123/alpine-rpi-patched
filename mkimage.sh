@@ -13,8 +13,9 @@ cp -r ./jcx docker/
 cp -r ./.git docker/
 
 chmod +x docker/patcher.sh
+chmod +x docker/docker-patcher-entrypoint.sh
 
-docker run -it --rm --workdir /docker --entrypoint ./patcher.sh -v $(pwd)/docker:/docker alpine
+docker run -it --rm --workdir /docker --entrypoint ./docker-patcher-entrypoint.sh -v $(pwd)/docker:/docker alpine $1
 
 # Part 2: turn the patched .gz into a bootable .img
 
