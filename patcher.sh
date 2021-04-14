@@ -11,7 +11,7 @@ apk add cpio curl tar git && \
 
 
 echo 'Creating jcx/sha file...'
-git rev-parse --short | cut -c1-5 > jcx/sha
+git rev-parse --short HEAD > jcx/sha
 
 echo 'Deleting .git...' && \
 rm -rf .git

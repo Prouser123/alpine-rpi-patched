@@ -39,7 +39,7 @@ echo -e "\033[1;32mModel\t\t\t\033[1;36m$(cat /proc/device-tree/model)\033[0m" |
 echo -e "\033[1;32m$(uname -s)\t\t\t\033[1;36m$(uname -r) ($(uname -m))\033[0m"  | echoinfo
 echo -e "\033[1;32mTotal RAM\t\t\t\033[1;36m$(grep "MemTotal" /proc/meminfo | awk '{print $2}')kB (base 10)\033[0m" | echoinfo
 echo -e "\033[1;32mIP (eth0)\t\t\t\033[1;36m$(ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | cut -d ' ' -f1)\033[0m" | echoinfo
-echo -e "\033[1;32mSHA\t\t\033[1;36m$(cat /jcx/.sha)\033[0m" | echoinfo
+echo -e "\033[1;32mSHA\t\t\t\033[1;36m$(cat /jcx/.sha)\033[0m" | echoinfo
 
 echo ""
 
