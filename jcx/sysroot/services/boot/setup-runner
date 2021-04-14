@@ -2,6 +2,19 @@
 
 # FIXME: Step 7 regression from old runner: FQDN always fails to resolve and falls back to default.
 
+# annoying: gotta install coreutils (using a tar.gz here with the bare minimum for it to boot)
+
+tar -xvf /media/mmcblk0p1/apks/extra-fs/coreutils.fs.tar.gz -C /
+
+# uwu fancy
+esc=$(printf '\033')
+
+logr() {
+	# stdbuf -o0 "$@" | sed "s/^/setup: /"
+	# Removed "${esc}[1;33m" from end (to keep output normal colors)
+	stdbuf -o0 "$@" | sed "s/^/${esc}[1;36m *${esc}[0m jcx-boot (${esc}[1;33msetup${esc}[0m): /"
+}
+
 swarn "Running first boot setup..."
 
 yesno $JCX_VERBOSE && sbegin "(verbose): Enabling command echoing" && set -x
@@ -40,7 +53,7 @@ iface eth0 inet dhcp
 # Step 3: Setup networking
 sbegin "Setting up networking"
 # /etc/init.d/networking --quiet start >/dev/null
-/etc/init.d/networking start
+logr /etc/init.d/networking start
 
 # Step 3.1: Setup DNS if dhcp was not configured
 grep '^iface.*dhcp' $ROOT/etc/network/interfaces > /dev/null ||\
@@ -70,8 +83,8 @@ sbegin "Restarting hostname"
 
 # Step 6.2: Start up the services
 sbegin "Starting boot and default services"
-openrc boot
-openrc default
+logr openrc boot
+logr openrc default
 
 # Step 7-pre: Define get_fdqn
 # Extract fully qualified domain name from current hostname. If none is
@@ -104,11 +117,12 @@ sed -i -e "s/^127\.0\.0\.1.*/127.0.0.1\t${_hn}.${_dn:-$(get_fqdn)} ${_hn} localh
 # Step 9: Setup NTP
 sbegin "Setting up NTP"
 # We don't bother with the pre-req checks here
-setup-ntp -c chrony
+logr setup-ntp -c chrony
 
 # Step 9.1: Grab NTP data (Jump to current time)
 sbegin "Grabbing NTP date"
 #echo $(set -x && chronyc makestep)
+# load trackr
 .  /jcx/services/boot/trackr.sh
 
 # Step 10-pre: Define get_alpine_release
@@ -134,11 +148,15 @@ echo "${mirror%/}/${release}/community" >> /etc/apk/repositories
 
 # Step 11: Setup SSHd (SSH Server)
 sbegin "Setting up sshd"
-setup-sshd -c openssh
+logr setup-sshd -c openssh
 
-# Step 11.1: Enanable password and root login
+# Step 11.1: Enable password and root login
+sbegin "Configuring sshd"
 echo -e "PasswordAuthentication yes\nPermitRootLogin yes\nPermitEmptyPasswords yes\nDenyUsers guest" > /etc/ssh/sshd_config
-rc-service sshd restart
+
+# Step 11.2: Restart SSHd to start using our new config
+sbegin "Restarting sshd"
+rc-service sshd restart --quiet
 
 # (Skipped setup-xen-dom0)
 
@@ -147,7 +165,8 @@ rc-service sshd restart
 # Step 13: Upgrade everything
 sbegin "Upgrading system"
 
-apk update && apk upgrade
+logr apk update
+logr apk upgrade
 
 # Cleaning up
 sbegin "Cleaning up"

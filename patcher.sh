@@ -40,6 +40,32 @@ echo 'Injecting custom data...' && \
 echo 'Adding usercfg.txt...' && \
 ( cd ../alpine; cp ../usercfg.txt ./ )
 
+echo 'Downloading and extracting extra packages (coreutils)...' && \
+(
+	mkdir -p /tmp/coreutils-stuffs && cd /tmp/coreutils-stuffs
+	curl -fSL --create-dirs --output-dir apks/ \
+	-O https://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main/armhf/coreutils-8.31-r0.apk \
+	-O https://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main/armhf/libacl-2.2.53-r0.apk \
+	-O https://alpine-cf-cdn.jcx.ovh/alpine/v3.11/main/armhf/libattr-2.4.48-r0.apk
+
+	mkdir fs && cd fs
+
+	# 1: Extract coreutils
+	tar -xvf ../apks/coreutils-8.31-r0.apk usr/bin/coreutils usr/bin/stdbuf usr/libexec/coreutils/libstdbuf.so
+	tar -xvf ../apks/libacl-2.2.53-r0.apk lib/libacl.so.1 lib/libacl.so.1.1.2253
+	tar -xvf ../apks/libattr-2.4.48-r0.apk lib/libattr.so.1 lib/libattr.so.1.1.2448
+)
+
+echo 'Packing extra packages...' && \
+(
+	mkdir -p ../alpine/apks/extra-fs/
+	cd ../alpine/apks/extra-fs/
+	tar -zcvf coreutils.fs.tar.gz -C /tmp/coreutils-stuffs/fs/ .
+
+	chmod -R 755 ./
+)
+
+
 # ./patcher debug | override cmdline.txt to include non-quiet and serial UART console
 if [ $1 == 'debug' ]
 then

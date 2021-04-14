@@ -9,18 +9,18 @@ tbegin() {
 wait_for_net() {
     if ping -q -c 1 -W 1 google.com > /dev/null; then
         # Network is up
-        echo "We have a route to the internet!"
+        logr echo "We have a route to the internet!"
         "$@"
     else
-        echo "No network, waiting 5 seconds..."
+        logr echo "No network, waiting 5 seconds..."
         sleep 5
         wait_for_net "$@"
     fi
 }
 
 chronyc_update() {
-    chronyc makestep
-    chronyc tracking
+    logr chronyc makestep
+    logr chronyc tracking
 }
 
 chronyc_check_tracking_status() {
@@ -44,14 +44,14 @@ chronyc_check_tracking_status() {
 chronyc_quick() {
     tbegin "Configuring chrony for quick setup..."
     # Step 1: Inform chonry that we have a network connection
-    chronyc online
+    logr chronyc online
 
     # Step 2: Tell chrony to make a set of measurements over a short period of time
     # (instead of the usual periodic ones)
-    chronyc burst 4/4 #  4 good measurements, no more than 4 attempted connections
+    logr chronyc burst 4/4 #  4 good measurements, no more than 4 attempted connections
 
     # Step 3 (alt method instead of "sleep $X")
-    chronyc waitsync 12 # Wait up to 12*10 seconds (120s // 2m) for chrony to sync to a source
+    logr chronyc waitsync 12 # Wait up to 12*10 seconds (120s // 2m) for chrony to sync to a source
     
     # TODO: Check waitsync exit code?
 
