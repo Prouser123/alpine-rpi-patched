@@ -26,6 +26,14 @@ iface lo inet loopback
 
 auto eth0
 iface eth0 inet dhcp
+	udhcpc_opts -t 5 -T 10 -b -S
+	# Setting options to hopefully increase our chances
+	# of getting a lease before being forked to the background
+	#
+	# -t 5 | 5 initial retries
+	# -T 10 | wait 10s between packets
+	# -b | run in background if not obtained
+	# -S | enable syslog logging (/var/log/messages)
 	hostname alpine
 " | setup-interfaces -i
 
@@ -101,7 +109,8 @@ setup-ntp -c chrony
 # Step 9.1: Grab NTP data (Jump to current time)
 sbegin "Grabbing NTP date"
 #echo $(set -x && chronyc makestep)
-chmod +x /jcx/services/boot/trackr.sh && ./jcx/services/boot/trackr.sh
+chmod +x /jcx/services/boot/trackr.sh
+.  /jcx/services/boot/trackr.sh
 
 # Step 10-pre: Define get_alpine_release
 get_alpine_release() {

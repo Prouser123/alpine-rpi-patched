@@ -1,5 +1,23 @@
 #!/bin/sh
 
+einfo "jcx-boot: trackr: Welcome!"
+
+tbegin() {
+    sbegin "trackr: $@"
+}
+
+wait_for_net() {
+    if ping -q -c 1 -W 1 google.com > /dev/null; then
+        # Network is up
+        echo "We have a route to the internet!"
+        "$@"
+    else
+        echo "No network, waiting 5 seconds..."
+        sleep 5
+        wait_for_net "$@"
+    fi
+}
+
 chronyc_update() {
     chronyc makestep
     chronyc tracking
@@ -23,19 +41,33 @@ chronyc_check_tracking_status() {
     fi
 }
 
-chronyc_get_number_of_sources() {
+chronyc_quick() {
+    tbegin "Configuring chrony for quick setup..."
+    # Step 1: Inform chonry that we have a network connection
+    chronyc online
+
+    # Step 2: Tell chrony to make a set of measurements over a short period of time
+    # (instead of the usual periodic ones)
+    chronyc burst 4/4 #  4 good measurements, no more than 4 attempted connections
+
+    # Step 3 (alt method instead of "sleep $X")
+    chronyc waitsync 12 # Wait up to 12*10 seconds (120s // 2m) for chrony to sync to a source
+    
+    # TODO: Check waitsync exit code?
+
+    tbegin "Waiting for chronyd to find sources"
     local num=$(chronyc sources | grep -o 'Number of sources.*' | cut -f5- -d ' ')
-    echo "$num"
+    einfo "jcx-boot: trackr: Found $num sources"
     # Eg output: "0", "2", etc
-    if [ "$num" == "0" ]
+    if [ "$num" != "0" ]
     then
-        echo "We have 0 sources! Waiting 2 seconds..."
-        sleep 2
-        chronyc_get_number_of_sources
-    else
-        echo "We have sources! Let's check our tracking status..."
-        chronyc_check_tracking_status
+        # Continue
+        chronyc_update
     fi
 }
 
-chronyc_get_number_of_sources
+# /usr/bin/time -f %E <cmd>
+# chronyc_get_number_of_sources
+
+# Wait for net connection, then run chronyc_quick
+wait_for_net chronyc_quick
