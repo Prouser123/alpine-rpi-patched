@@ -16,13 +16,17 @@ echoinfo() {
 
 swarn "Welcome to the JCX Boot Service!"
 
+# Set debug env based on kernel opts
+JCX_VERBOSE="NO"
+cat "$sysroot"/proc/cmdline | grep jcx-boot-verbose > /dev/null
+if [ $? -eq 0 ]; then JCX_VERBOSE="YES"; fi
+
 # If first boot, run setup.
 sbegin "Checking if this is the first boot"
 if [ ! -e /jcx/checks/firstboot ]
 then
 	ebegin "First boot! Running setup"
 	. /jcx/services/boot/setup-runner
-	set +x # set back to pre-setup-runner
 fi
 
 # ----- System Information -----

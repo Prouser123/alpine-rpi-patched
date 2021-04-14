@@ -4,7 +4,7 @@
 
 swarn "Running first boot setup..."
 
-set -x
+yesno $JCX_VERBOSE && sbegin "(verbose): Enabling command echoing" && set -x
 
 # Step 0: Raspberry Pis don't have a hardware clock!
 sbegin "Fixing clock"
@@ -109,7 +109,6 @@ setup-ntp -c chrony
 # Step 9.1: Grab NTP data (Jump to current time)
 sbegin "Grabbing NTP date"
 #echo $(set -x && chronyc makestep)
-chmod +x /jcx/services/boot/trackr.sh
 .  /jcx/services/boot/trackr.sh
 
 # Step 10-pre: Define get_alpine_release
@@ -157,3 +156,6 @@ mkdir -p /jcx/checks
 touch /jcx/checks/firstboot
 
 # We don't "exit 0" here as we source this file in runner.
+
+#if [ "$EINFO_VERBOSE" = true]; then set +x; fi
+yesno $JCX_VERBOSE && sbegin "(verbose): Disabling command echoing" && set +x
